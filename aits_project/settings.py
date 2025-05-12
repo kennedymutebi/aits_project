@@ -27,7 +27,7 @@ EMAIL_HOST = 'smtp.gmail.com'  # Replace with your SMTP server
 EMAIL_PORT = 587  # Typically 587 for TLS
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'kennedymutebi7@gmail.com'  # Replace with your email
-EMAIL_HOST_PASSWORD = 'PSS@12345'  # Replace with your password
+EMAIL_HOST_PASSWORD = 'ikrq hrvz cxwc fmch'  # Replace with your password
 DEFAULT_FROM_EMAIL = 'kennedymutebi7@gmail.com'  # Replace with your from email
 
 INSTALLED_APPS = [
@@ -59,10 +59,11 @@ INSTALLED_APPS = [
     'apps.authentication',
     'apps.issues',
     
-    'apps.notifications',
+
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+         
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
@@ -75,8 +76,11 @@ REST_FRAMEWORK = {
     
 
 MIDDLEWARE = [
+    
+    'django.middleware.csrf.CsrfViewMiddleware',  # Make sure this is included
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    
     'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -110,7 +114,7 @@ WSGI_APPLICATION = 'aits_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'aits',
+        'NAME': 'sys',
         'USER': 'root',
         'PASSWORD': 'PSS@12345',
         'HOST': 'localhost',
@@ -165,21 +169,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST Framework settings
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.BasicAuthentication',  # Optionally include this
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated'
-
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
-}
 
 
 SPECTACULAR_SETTINGS={

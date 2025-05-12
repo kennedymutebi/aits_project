@@ -14,6 +14,8 @@ class User(AbstractUser):
     department = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+
 
     class Meta:
         db_table = 'users'

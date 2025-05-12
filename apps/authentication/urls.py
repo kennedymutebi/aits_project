@@ -10,6 +10,9 @@ from .views import (
 )
 from .views import my_view 
 from .views import AdminRegistrationView 
+from .views import UserProfileView
+from django.urls import path
+from .views import PasswordResetRequestView, SetNewPasswordView
 urlpatterns = [
     path('register/student', StudentRegistrationView.as_view(), name='register-student'),
     path('register/lecturer', LecturerRegistrationView.as_view(), name='register-lecturer'),
@@ -19,4 +22,10 @@ urlpatterns = [
     path('test', TestView.as_view(), name='test-view'),
     path('register/admin', AdminRegistrationView.as_view(), name='register-admin'),
     path('', my_view, name="auth_home"),
+    path('api/profile/', UserProfileView.as_view(), name='user-profile'),
+    path('password-reset-request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('password-reset-confirm/', SetNewPasswordView.as_view(), name='password_reset_confirm'),
+    # urls.py
+
+
 ]

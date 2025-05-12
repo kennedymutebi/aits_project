@@ -1,8 +1,10 @@
 from django.http import JsonResponse, HttpResponse
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth import authenticate, login, logout
 from django.views import View
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from django.contrib.auth import get_user_model
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,7 +18,7 @@ from django.contrib.auth.hashers import make_password  # Import password hashing
 from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib.auth.hashers import check_password
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,permissions
 from rest_framework.permissions import AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
@@ -30,6 +32,9 @@ from django.contrib.auth import get_user_model  # Import User model dynamically
 from .serializers import AdminRegistrationSerializer
 from django.shortcuts import render
 import logging
+from apps.authentication.custom_auth import DebugAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
+from .serializers import PasswordResetRequestSerializer, SetNewPasswordSerializer
 logger = logging.getLogger(__name__)
 def home_view(request):
     return render(request, 'home.html') 
@@ -197,3 +202,67 @@ class CustomLogoutView(LogoutView):
         response = super().get(request, *args, **kwargs)
         # Optionally, you can return a custom message here
         return JsonResponse({"message": "Successfully logged out!"}, status=status.HTTP_200_OK)
+
+
+
+class UserProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request):
+        user = request.user
+        user_data = UserSerializer(user).data
+        profile_data = {}
+
+        if user.user_type == 'student':
+            try:
+                student = Student.objects.get(user=user)
+                profile_data = StudentRegistrationSerializer(student).data
+            except Student.DoesNotExist:
+                profile_data = {"detail": "Student profile not found."}
+        elif user.user_type == 'lecturer':
+            try:
+                lecturer = Lecturer.objects.get(user=user)
+                profile_data = LecturerRegistrationSerializer(lecturer).data
+            except Lecturer.DoesNotExist:
+                profile_data = {"detail": "Lecturer profile not found."}
+        else:
+            profile_data = {"detail": "Admin has no additional profile."}
+
+        return Response({
+            "user": user_data,
+            "profile": profile_data
+        })
+
+    def patch(self, request):
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Profile updated", "user": serializer.data}, status=200)
+        return Response(serializer.errors, status=400)
+User = get_user_model()
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        user = User.objects.get(email=email)
+        
+        # Generate token
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(user)
+
+        # In real apps, you send this link via email
+        reset_link = f"http://frontend-app.com/reset-password?email={user.email}&token={token}"
+
+        # For now, just return the link for testing
+        return Response({'reset_link': reset_link}, status=status.HTTP_200_OK)
+
+class SetNewPasswordView(APIView):
+    def post(self, request):
+        serializer = SetNewPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'message': 'Password reset successful.'}, status=status.HTTP_200_OK)
+
+
